@@ -1430,6 +1430,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "wait",
  "windows",
 ]
 
@@ -1779,6 +1780,12 @@ dependencies = [
  "num-traits",
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "wait"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca0478aad1250f959f7385b555cf7f444b2840d66c2d983b158256e50a76a834"
 
 [[package]]
 name = "want"

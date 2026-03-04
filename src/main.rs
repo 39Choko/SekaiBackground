@@ -1,10 +1,11 @@
-use std::{ffi::{CString, c_void}, fs, path::Path};
+use std::{ffi::{CString, c_void}, fs, path::Path, thread, time::Duration};
 
 use futures::{StreamExt, stream::FuturesUnordered};
 use indexmap::IndexMap;
 use rand::{rngs::ThreadRng, seq::SliceRandom};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use wait::Waitable;
 use windows::Win32::UI::WindowsAndMessaging::{SPI_SETDESKWALLPAPER, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS, SystemParametersInfoA};
 
 const CONFIG_DIR: &str = "C:\\39Choko\\SekaiBackground";
@@ -14,6 +15,18 @@ const CONFIG_PATH: &str = "C:\\39Choko\\SekaiBackground\\config.json";
 struct Config {
     #[serde(flatten)]
     units: IndexMap<String, IndexMap<String, bool>>,
+}
+
+fn wait_for_network() {
+    let client = Client::new();
+
+    loop {
+        if client.get("https://www.google.com").send().wait().is_ok() {
+            break;
+        }
+
+        thread::sleep(Duration::from_secs(1));
+    }
 }
 
 fn get_res_id(name: &str) -> Option<String> {
@@ -112,6 +125,7 @@ fn set_wallpaper(path: &str) {
 
 #[tokio::main]
 async fn main() {
+    wait_for_network();
     ensure_config_exists();
 
     let config_data: String = fs::read_to_string(CONFIG_PATH).expect("Could not read config file.");
