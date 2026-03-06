@@ -3,7 +3,7 @@
 ## Installation
 
 ```ps1
-iwr -useb https://raw.githubusercontent.com/39Choko/SekaiBackground/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/39Choko/SekaiBackground/master/install.ps1 | iex
 ```
 
 then restart your terminal and type `sekai-bg` to start using it!
