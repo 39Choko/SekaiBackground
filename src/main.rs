@@ -199,12 +199,13 @@ fn set_wallpaper(path: &str) {
 
 #[tokio::main]
 async fn main() {
+    ensure_config_exists();
+
     let args = Args::parse();
     args.config();
     args.update();
 
     wait_for_network();
-    ensure_config_exists();
 
     let config_data: String = fs::read_to_string(CONFIG_PATH).expect("Could not read config file.");
     let config: Config = serde_json::from_str(&config_data).expect("JSON Error");
