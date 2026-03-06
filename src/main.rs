@@ -1,4 +1,4 @@
-use std::{ffi::{CString, c_void}, fs, path::Path, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{ffi::{CString, c_void}, fs, path::Path, process::Command, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use clap::Parser;
 use futures::{StreamExt, stream::FuturesUnordered};
@@ -7,7 +7,7 @@ use rand::{rngs::ThreadRng, seq::SliceRandom};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use wait::Waitable;
-use windows::Win32::UI::WindowsAndMessaging::{SPI_SETDESKWALLPAPER, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS, SystemParametersInfoA};
+use windows::Win32::{UI::WindowsAndMessaging::{SPI_SETDESKWALLPAPER, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS, SystemParametersInfoA}};
 
 const CONFIG_DIR: &str = "C:\\39Choko\\SekaiBackground";
 const CONFIG_PATH: &str = "C:\\39Choko\\SekaiBackground\\config.json";
@@ -38,7 +38,55 @@ impl Args {
 
     fn update(&self) {
         if self.update {
-            println!("doing nothing for now...");
+            println!("Checking for updates...");
+
+            let current_verison = env!("CARGO_PKG_VERSION");
+            let url = "https://api.github.com/repos/39Choko/SekaiBackground/releases/latest";
+            let client = Client::new();
+            let request = client.get(url).header("User-Agent", "SekaiBackground-Updater").send().wait();
+            
+            match request.into() {
+                Ok(response) => {
+                    if let Ok(text) = response.text().wait() {
+                        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
+                            let latest_version = json["tag_name"].as_str().unwrap_or("");
+
+                            println!("Latest version: {}", latest_version);
+
+                            if latest_version > current_verison {
+                                println!("New version available: {}. Attemping to update...", latest_version);
+                            } else {
+                                println!("You are using the latest version.");
+                                std::process::exit(0);
+                            }
+                        }
+                    }
+
+                }
+                Err(_) => {
+                    eprintln!("Failed to check for updates.");
+                    std::process::exit(1);
+                }
+            }
+
+            let status = Command::new("powershell.exe")
+                .arg("-NoProfile")
+                .arg("-ExecutionPolicy")
+                .arg("Bypass")
+                .arg("-Command")
+                .arg("Invoke-RestMethod -Uri https://raw.githubusercontent.com/39Choko/SekaiBackground/master/install.ps1 | Invoke-Expression")
+                .spawn();
+
+            match status {
+                Ok(_) => {
+                    println!("Updater started. Closing CLI to allow installation.");
+                    std::process::exit(0);
+                }
+                Err(e) => {
+                    eprintln!("Failed to launch PowerShell: {}", e);
+                    std::process::exit(1);
+                },
+            }
         }
     }
 }
