@@ -1,4 +1,4 @@
-use std::{ffi::{CString, c_void}, fs, path::Path, thread, time::Duration};
+use std::{ffi::{CString, c_void}, fs, path::Path, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use futures::{StreamExt, stream::FuturesUnordered};
 use indexmap::IndexMap;
@@ -176,7 +176,12 @@ async fn main() {
 
     while let Some(result) = tasks.next().await {
         if let Ok(Ok((img, url))) = result {
-            let bmp_path = std::env::temp_dir().join("sekai_bg.bmp");
+            let timestamp = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis();
+
+            let bmp_path = std::env::temp_dir().join(format!("sekai_bg_{}.bmp", timestamp));
             img.save_with_format(&bmp_path, image::ImageFormat::Bmp)
                 .expect("Failed to save BMP");
 
