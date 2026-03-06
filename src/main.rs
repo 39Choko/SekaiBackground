@@ -1,5 +1,6 @@
 use std::{ffi::{CString, c_void}, fs, path::Path, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
+use clap::Parser;
 use futures::{StreamExt, stream::FuturesUnordered};
 use indexmap::IndexMap;
 use rand::{rngs::ThreadRng, seq::SliceRandom};
@@ -15,6 +16,31 @@ const CONFIG_PATH: &str = "C:\\39Choko\\SekaiBackground\\config.json";
 struct Config {
     #[serde(flatten)]
     units: IndexMap<String, IndexMap<String, bool>>,
+}
+
+#[derive(clap::Parser, Debug)]
+#[command(version)]
+struct Args {
+    #[arg(short, long, help = "Print config path", )]
+    config: bool,
+
+    #[arg(long, help = "Update SekaiBackground to the lastest version if an update is available")]
+    update: bool,
+}
+
+impl Args {
+    fn config(&self) {
+        if self.config {
+            println!("{}", CONFIG_PATH);
+            std::process::exit(0);
+        }
+    }
+
+    fn update(&self) {
+        if self.update {
+            println!("doing nothing for now...");
+        }
+    }
 }
 
 fn wait_for_network() {
@@ -125,6 +151,10 @@ fn set_wallpaper(path: &str) {
 
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+    args.config();
+    args.update();
+
     wait_for_network();
     ensure_config_exists();
 
