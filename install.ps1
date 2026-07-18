@@ -76,6 +76,11 @@ function Install-SekaiBackground {
     Write-Host -Object "Installing SekaiBackground..."
   }
   process {
+    if (-not (Test-Path -Path $folderPath)) {
+      Write-Host -Object "Directory not found. Creating $folderPath..."
+      New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
+    }
+
     $binaryPath = Get-SekaiBackground
     Move-Item -Path $binaryPath -Destination "$folderPath\sekai-bg.exe" -Force
     Add-SekaiBackgroundToPath
