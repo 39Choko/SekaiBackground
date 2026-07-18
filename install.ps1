@@ -40,7 +40,7 @@ function Get-SekaiBackground {
     Write-Host -Object "Downloading SekaiBackground version $targetVersion..."
     $Parameters = @{
       Uri = "https://github.com/39Choko/SekaiBackground/releases/download/$targetVersion/sekai-bg.exe"
-      UseBasicParsin = $true
+      UseBasicParsing = $true
       OutFile = $binaryPath
     }
     Invoke-WebRequest @Parameters
