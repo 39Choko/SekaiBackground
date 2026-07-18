@@ -1,4 +1,4 @@
-use std::{ffi::{CString, c_void}, fs, path::Path, process::Command, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{ffi::{CString, c_void}, fs, path::Path, process::Command, thread, time::Duration};
 
 use clap::Parser;
 use futures::{StreamExt, stream::FuturesUnordered};
@@ -255,16 +255,11 @@ async fn main() {
 
     while let Some(result) = tasks.next().await {
         if let Ok(Ok((img, url))) = result {
-            let timestamp = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis();
+            let image_path = std::path::Path::new(CONFIG_DIR).join("wallpaper.png");
+            img.save_with_format(&image_path, image::ImageFormat::Png)
+                .expect("Failed to save PNG");
 
-            let bmp_path = std::env::temp_dir().join(format!("sekai_bg_{}.bmp", timestamp));
-            img.save_with_format(&bmp_path, image::ImageFormat::Bmp)
-                .expect("Failed to save BMP");
-
-            let path_str = bmp_path.to_str().unwrap();
+            let path_str = image_path.to_str().unwrap();
             set_wallpaper(path_str);
             println!("Wallpaper set from URL: {}", url);
 
